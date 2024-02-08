@@ -1,0 +1,14 @@
+USE [RadioBroadcasts];
+
+
+DROP TABLE [dbo].[TBL_ADMIN];
+
+DROP TABLE [dbo].[TBL_ANT];
+
+DROP TABLE [dbo].[TBL_BROADCASTER];
+
+DROP TABLE [dbo].[TBL_HF_SCHEDULE];
+
+DROP TABLE [dbo].[TBL_LANGUAGE];
+
+DROP TABLE [dbo].[TBL_LOCATION];
