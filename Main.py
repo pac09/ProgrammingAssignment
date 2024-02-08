@@ -3,6 +3,7 @@ from tkinter import ttk
 from tkinter.filedialog import askdirectory
 from tkinter.messagebox import askyesno
 from DataImporter import ImportWorker
+from DataLoader import Loader
 
 class Main(tk.Tk):
 
@@ -21,7 +22,7 @@ class Main(tk.Tk):
 
         labelStep2 = ttk.Label(self, text="Step 2 - Load data in DataFrames", font= ('Arial 12'))
         labelStep2.pack()
-        ttk.Button(self, text= "Execute Step 2", command=self.stepOne).pack(expand=True)
+        ttk.Button(self, text= "Execute Step 2", command=self.stepTwo).pack(expand=True)
 
         labelStep3 = ttk.Label(self, text="Step 3 - Clean data", font= ('Arial 12'))
         labelStep3.pack()
@@ -37,8 +38,7 @@ class Main(tk.Tk):
 
     def stepOne(self):
         answer = askyesno(title='Step 1 Confirmation', message='Are you sure you want to import data in database?')
-        if answer:       
-            # Open a file dialog and get the directory path
+        if answer:
             directoryName = askdirectory()
 
             ImportWorker.importAdmin(directoryName)
@@ -47,6 +47,12 @@ class Main(tk.Tk):
             ImportWorker.importHfSchedule(directoryName)
             ImportWorker.importLanguage(directoryName)
             ImportWorker.importLocation(directoryName)
+
+    def stepTwo(self):
+        answer = askyesno(title='Step 2 Confirmation', message='Are you sure you want to load the data?')
+        if answer:
+            adminData = Loader.LoadAdminData()
+            return adminData
 
 if __name__ == "__main__":
     app = Main()
