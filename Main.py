@@ -3,7 +3,7 @@ from tkinter import ttk
 from tkinter.filedialog import askdirectory
 from tkinter.messagebox import askyesno
 from DataImporter import ImportWorker
-from DataLoader import Loader
+from DataCleaner import Cleaner
 
 class Main(tk.Tk):
 
@@ -51,8 +51,8 @@ class Main(tk.Tk):
     def stepTwo(self):
         answer = askyesno(title='Step 2 Confirmation', message='Are you sure you want to load the data?')
         if answer:
-            adminData = Loader.LoadAdminData()
-            return adminData
+            Cleaner.CleanData()
+            return
 
 if __name__ == "__main__":
     app = Main()
