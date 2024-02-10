@@ -3,7 +3,8 @@ from tkinter import ttk
 from tkinter.filedialog import askdirectory
 from tkinter.messagebox import askyesno
 from DataImporter import ImportWorker
-from DataCleaner import Cleaner
+from DataProcessor import DataHandler
+from StatisticsGenerator import Generator
 
 class Main(tk.Tk):
 
@@ -20,21 +21,13 @@ class Main(tk.Tk):
         labelStep1.pack()
         ttk.Button(self, text= "Execute Step 1", command=self.stepOne).pack(expand=True)
 
-        labelStep2 = ttk.Label(self, text="Step 2 - Load data in DataFrames", font= ('Arial 12'))
+        labelStep2 = ttk.Label(self, text="Step 2 - Prepare data and export to JSON", font= ('Arial 12'))
         labelStep2.pack()
         ttk.Button(self, text= "Execute Step 2", command=self.stepTwo).pack(expand=True)
 
-        labelStep3 = ttk.Label(self, text="Step 3 - Clean data", font= ('Arial 12'))
+        labelStep3 = ttk.Label(self, text="Step 3 - Generate Stats and Graphs", font= ('Arial 12'))
         labelStep3.pack()
         ttk.Button(self, text= "Execute Step 3", command=self.stepOne).pack(expand=True)
-
-        labelStep4 = ttk.Label(self, text="Step 4 - XXX XXX XXX", font= ('Arial 12'))
-        labelStep4.pack()
-        ttk.Button(self, text= "Execute Step 4", command=self.stepOne).pack(expand=True)
-
-        labelStep5 = ttk.Label(self, text="Step 5 - XXX XXX XXX", font= ('Arial 12'))
-        labelStep5.pack()
-        ttk.Button(self, text= "Execute Step 5", command=self.stepOne).pack(expand=True)
 
     def stepOne(self):
         answer = askyesno(title='Step 1 Confirmation', message='Are you sure you want to import data in database?')
@@ -49,10 +42,16 @@ class Main(tk.Tk):
             ImportWorker.importLocation(directoryName)
 
     def stepTwo(self):
-        answer = askyesno(title='Step 2 Confirmation', message='Are you sure you want to load the data?')
+        answer = askyesno(title='Step 2 Confirmation', message='Are you sure you want to start processing the data?')
         if answer:
-            Cleaner.CleanData()
+            DataHandler.PrepareData()
             return
+        
+    def stepThree(self):
+        answer = askyesno(title='Step 3 Confirmation', message='Are you sure you want to load the JSON and generate the Stats?')
+        if answer:
+            Generator.PrepareData()
+        return
 
 if __name__ == "__main__":
     app = Main()

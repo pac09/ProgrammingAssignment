@@ -1,11 +1,14 @@
 import pyodbc
 import pandas as pd
 import gc
+import warnings
 
+class DataHandler:
 
-class Cleaner:
+    def PrepareData():
+        # Clear warnings, we can not implement SQL Alchemy because it's not part of the content taught in the course
+        warnings.filterwarnings('ignore')
 
-    def CleanData():
         conn = pyodbc.connect('DRIVER={SQL Server};'
                         'SERVER=localhost,1433;'
                         'DATABASE=RadioBroadcasts;'
@@ -91,6 +94,64 @@ class Cleaner:
 
         finaldataFrame.rename({'Ant': 'Antenna Type', 'Site': 'Transmitter'}, axis=1, inplace=True)
 
-        print(finaldataFrame[['Freq', 'Start', 'Stop', 'CirafZones', 'Powr', 'AziMuth', 'Slew', 'Days', 'Sdate', 'Edate', 'Mod', 'Afrq', 'FmoCode', 'BroadcasterCode', 'Broadcaster', 'AdminCode', 'AdminName', 'LanguageCode', 'Language', 'AntCode', 'Antenna Type', 'LocCode', 'Transmitter', 'Adm', 'Lat', 'Long']])
+        finaldataFrame = finaldataFrame[['Freq', 'Start', 'Stop', 'CirafZones', 'Powr', 'AziMuth', 'Slew', 'Days', 'Sdate', 'Edate', 'Mod', 'Afrq', 'FmoCode', 'BroadcasterCode', 'Broadcaster', 'AdminCode', 'AdminName', 'LanguageCode', 'Language', 'AntCode', 'Antenna Type', 'LocCode', 'Transmitter', 'Adm', 'Lat', 'Long']]
+
+        # Building JSON file
+        jsonheader = ['Freq', 'Start', 'Stop', 'CirafZones', 'Powr', 'AziMuth', 'Slew', 'Days', 'Sdate', 'Edate', 'Mod', 'Afrq', 'FmoCode']
+
+        dtGroupedBroadcasters = (finaldataFrame
+                          .groupby(jsonheader)
+                          .apply(lambda x: x[['BroadcasterCode','Broadcaster']].to_dict('records'))
+                          .reset_index()
+                          .rename(columns={0:'Broadcaster'}))
+
+        dtGroupedAdmins = (finaldataFrame
+                          .groupby(jsonheader)
+                          .apply(lambda x: x[['AdminCode', 'AdminName']].to_dict('records'))
+                          .reset_index()
+                          .rename(columns={0:'Admin'}))
+
+        dtGroupedLanguages = (finaldataFrame
+                          .groupby(jsonheader)
+                          .apply(lambda x: x[['LanguageCode', 'Language']].to_dict('records'))
+                          .reset_index()
+                          .rename(columns={0:'Language'}))
+
+        dtGroupedAntennas = (finaldataFrame
+                          .groupby(jsonheader)
+                          .apply(lambda x: x[['AntCode', 'Antenna Type']].to_dict('records'))
+                          .reset_index()
+                          .rename(columns={0:'Ant'}))
+
+        dtGroupedLocations = (finaldataFrame
+                          .groupby(jsonheader)
+                          .apply(lambda x: x[['LocCode', 'Transmitter', 'Adm', 'Lat', 'Long']].to_dict('records'))
+                          .reset_index()
+                          .rename(columns={0:'Location'}))
+        
+        finaldataFrame = finaldataFrame[finaldataFrame.columns.drop('BroadcasterCode')]
+        finaldataFrame = finaldataFrame[finaldataFrame.columns.drop('Broadcaster')]
+        finaldataFrame = pd.merge(finaldataFrame, dtGroupedBroadcasters, on=jsonheader)
+        
+        finaldataFrame = finaldataFrame[finaldataFrame.columns.drop('AdminCode')]
+        finaldataFrame = finaldataFrame[finaldataFrame.columns.drop('AdminName')]
+        finaldataFrame = pd.merge(finaldataFrame, dtGroupedAdmins, on=jsonheader)
+
+        finaldataFrame = finaldataFrame[finaldataFrame.columns.drop('LanguageCode')]
+        finaldataFrame = finaldataFrame[finaldataFrame.columns.drop('Language')]
+        finaldataFrame = pd.merge(finaldataFrame, dtGroupedLanguages, on=jsonheader)
+
+        finaldataFrame = finaldataFrame[finaldataFrame.columns.drop('AntCode')]
+        finaldataFrame = finaldataFrame[finaldataFrame.columns.drop('Antenna Type')]
+        finaldataFrame = pd.merge(finaldataFrame, dtGroupedAntennas, on=jsonheader)
+
+        finaldataFrame = finaldataFrame[finaldataFrame.columns.drop('LocCode')]
+        finaldataFrame = finaldataFrame[finaldataFrame.columns.drop('Transmitter')]
+        finaldataFrame = finaldataFrame[finaldataFrame.columns.drop('Adm')]
+        finaldataFrame = finaldataFrame[finaldataFrame.columns.drop('Lat')]
+        finaldataFrame = finaldataFrame[finaldataFrame.columns.drop('Long')]
+        finaldataFrame = pd.merge(finaldataFrame, dtGroupedLocations, on=jsonheader)
+
+        finaldataFrame.to_json(r'Output\Data.json', orient='records')
 
         return
