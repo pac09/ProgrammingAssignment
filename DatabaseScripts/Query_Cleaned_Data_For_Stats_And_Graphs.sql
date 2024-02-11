@@ -1,15 +1,19 @@
---Filtered data for Broadcaster
-
+-- Filtered data for Broadcaster
 SELECT *
 INTO #TEMP_BROADCASTER
 FROM [dbo].[TBL_BROADCASTER]
 WHERE [Code] NOT IN ('ADM', 'DWL', 'KBS')
 
-
+-- Uncomment this line to drop the Temp table
 DROP TABLE #TEMP_BROADCASTER
 
 
---Cleaned data without Alpha numeric characters in 'CirafZones'
+
+
+
+-- Cleaned data without Alpha numeric characters in 'CirafZones'
+-- this is used to generate Statistics and Charts, because 'CirafZones' MUST NOT HAE Alphanumeric characters
+-- the CASE clause in the Query predicate equals the result of Python 'str.isnumeric()'
 
 SELECT Freq, 
 		[Start],
