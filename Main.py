@@ -94,7 +94,7 @@ class Main(tk.Tk):
             labelMedianByStart.pack()
 
             # Generate First Graph - Information for All shortwave frequencies
-            self.f = Generator.GenerateGraph()
+            self.f = Generator.GenerateGraph(dataFrame)
             self.canvas = FigureCanvasTkAgg(self.f)
             self.canvas.get_tk_widget().pack()
             self.canvas.draw()

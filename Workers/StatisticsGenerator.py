@@ -66,13 +66,17 @@ class Generator:
     def flatten(js):
         return pd.DataFrame(js).squeeze()
     
-    def GenerateGraph():
+    def GenerateGraph(df):
         # x = [1,2,3,4]
         # y = [20,21,20.5, 20.8]
         # fig = Figure()
         # axes = fig.add_subplot(111)
         # axes.plot(x,y)
 
+        # Clean the data to have 
+        cleanedDataFrame = Generator.cleanData(df)
+        print(df)
+        
         # set up the figure and axes
         fig = plt.figure(figsize=(8, 3))
         ax1 = fig.add_subplot(121, projection='3d')
