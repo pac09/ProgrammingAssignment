@@ -2,6 +2,7 @@ import pyodbc
 import pandas as pd
 import gc
 import warnings
+from Utils.ServerCredentials import Credentials
 
 class DataHandler:
 
@@ -9,13 +10,10 @@ class DataHandler:
         # Clear warnings, we can not implement SQL Alchemy because it's not part of the content taught in the course
         warnings.filterwarnings('ignore')
 
-        conn = pyodbc.connect('DRIVER={SQL Server};'
-                        'SERVER=localhost,1433;'
-                        'DATABASE=RadioBroadcasts;'
-                        'UID=sa;'
-                        'PWD=DevMode2024')
-        conn.setdecoding(pyodbc.SQL_CHAR, encoding='latin1')
-        conn.setencoding('latin1')
+        conn = pyodbc.connect(f'DRIVER=SQL Server;SERVER={Credentials.server};DATABASE={Credentials.database};UID={Credentials.user};PWD={Credentials.password}')
+        conn.setdecoding(pyodbc.SQL_CHAR, encoding=Credentials.encoding)
+        conn.setencoding(Credentials.encoding)
+
 
         # Removes 'BROADCASTER' code: ADM, DWL or KBS
         broadcasterQuery = "SELECT * FROM [dbo].[TBL_BROADCASTER];"
@@ -152,6 +150,6 @@ class DataHandler:
         finaldataFrame = finaldataFrame[finaldataFrame.columns.drop('Long')]
         finaldataFrame = pd.merge(finaldataFrame, dtGroupedLocations, on=jsonheader)
 
-        finaldataFrame.to_json(r'Output\Data.json', orient='records')
+        finaldataFrame.to_json(r'OutputFiles\Data.json', orient='records')
 
         return

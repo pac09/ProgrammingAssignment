@@ -1,12 +1,12 @@
 import pandas as pd
 import numpy as np
 from scipy import stats
-from StatEnum import StatType
+from Utils.StatEnum import StatType
 
 class Generator:
 
     def PrepareJsonData():
-        df = pd.read_json(r'Output\Data.json', orient=True)
+        df = pd.read_json(r'OutputFiles\Data.json', orient=True)
 
         # Flatten the Arrays present in DataFrame from JSON file
         broadcasterSeries = df.Broadcaster.apply(Generator.flatten)

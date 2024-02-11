@@ -1,22 +1,29 @@
 import csv
 import pyodbc
 import os
+from Utils.ServerCredentials import Credentials
 
 class ImportWorker:
 
+    def databaseCleanUp():    
+        # Set up the SQL Server connection
+        conn = pyodbc.connect(f'DRIVER=SQL Server;SERVER={Credentials.server};DATABASE={Credentials.database};UID={Credentials.user};PWD={Credentials.password}')
+
+        cursor = conn.cursor()
+        cleanupStoredProcedure = 'EXEC [dbo].[TablesCleanUp]'
+        cursor.execute(cleanupStoredProcedure)
+        cursor.commit()
+        return 
+    
     def genericImport(directoryName, fileName, sqlTable):
         format = 'csv'
 
         # Opens and reads the file in the directory
         with open(os.path.join(directoryName, fileName + "." + format), 'r', encoding="unicode_escape") as f:
             # Set up the SQL Server connection
-            conn = pyodbc.connect('DRIVER={SQL Server};'
-                            'SERVER=localhost,1433;'
-                            'DATABASE=RadioBroadcasts;'
-                            'UID=sa;'
-                            'PWD=DevMode2024')
-            conn.setdecoding(pyodbc.SQL_CHAR, encoding='latin1')
-            conn.setencoding('latin1')
+            conn = pyodbc.connect(f'DRIVER=SQL Server;SERVER={Credentials.server};DATABASE={Credentials.database};UID={Credentials.user};PWD={Credentials.password}')
+            conn.setdecoding(pyodbc.SQL_CHAR, encoding=Credentials.encoding)
+            conn.setencoding(Credentials.encoding)
 
             reader = csv.reader(f, delimiter=',')
             columns = next(reader) 
@@ -31,7 +38,7 @@ class ImportWorker:
             query = query.format(','.join(cleanedColumns), ','.join('?' * len(cleanedColumns)))
             
             cursor = conn.cursor()
-            
+
             for data in reader:
                 ImportWorker.escapeLanguageCommas(data, fileName)
                 cursor.execute(query, data)
@@ -51,7 +58,7 @@ class ImportWorker:
             data.remove('')
             
         return data
-
+    
     def importAdmin(directoryName):
         fileName = 'ADMIN'
         sqlTable = '[dbo].[TBL_ADMIN]'

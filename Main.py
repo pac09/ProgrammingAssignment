@@ -2,10 +2,10 @@ import tkinter as tk
 from tkinter import ttk
 from tkinter.filedialog import askdirectory
 from tkinter.messagebox import askyesno
-from DataImporter import ImportWorker
-from DataProcessor import DataHandler
-from StatisticsGenerator import Generator
-from StatEnum import StatType
+from Workers.DataImporter import ImportWorker
+from Workers.DataProcessor import DataHandler
+from Workers.StatisticsGenerator import Generator
+from Utils.StatEnum import StatType
 
 class Main(tk.Tk):
 
@@ -33,6 +33,8 @@ class Main(tk.Tk):
     def stepOne(self):
         answer = askyesno(title='Step 1 Confirmation', message='Are you sure you want to import data in database?')
         if answer:
+            ImportWorker.databaseCleanUp()
+
             directoryName = askdirectory()
 
             ImportWorker.importAdmin(directoryName)
