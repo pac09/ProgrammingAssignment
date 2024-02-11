@@ -5,6 +5,7 @@ from tkinter.messagebox import askyesno
 from DataImporter import ImportWorker
 from DataProcessor import DataHandler
 from StatisticsGenerator import Generator
+from StatEnum import StatType
 
 class Main(tk.Tk):
 
@@ -27,7 +28,7 @@ class Main(tk.Tk):
 
         labelStep3 = ttk.Label(self, text="Step 3 - Generate Stats and Graphs", font= ('Arial 12'))
         labelStep3.pack()
-        ttk.Button(self, text= "Execute Step 3", command=self.stepOne).pack(expand=True)
+        ttk.Button(self, text= "Execute Step 3", command=self.stepThree).pack(expand=True)
 
     def stepOne(self):
         answer = askyesno(title='Step 1 Confirmation', message='Are you sure you want to import data in database?')
@@ -50,7 +51,30 @@ class Main(tk.Tk):
     def stepThree(self):
         answer = askyesno(title='Step 3 Confirmation', message='Are you sure you want to load the JSON and generate the Stats?')
         if answer:
-            Generator.PrepareData()
+            dataFrame = Generator.PrepareJsonData()
+
+            filteredDfByPowr = Generator.filterDatabyPowr(dataFrame, 90)
+            meanByPowr =  Generator.calculateStats(filteredDfByPowr, StatType.MEAN)
+            modeByPowr =  Generator.calculateStats(filteredDfByPowr, StatType.MODE)
+            medianByPowr = Generator.calculateStats(filteredDfByPowr, StatType.MEDIAN)
+            
+            
+            filteredDfByStart = Generator.filterDatabyStart(dataFrame, 1100)
+            meanByStart =  Generator.calculateStats(filteredDfByStart, StatType.MEAN)
+            modeByStart =  Generator.calculateStats(filteredDfByStart, StatType.MODE)
+            medianByStart = Generator.calculateStats(filteredDfByStart, StatType.MEDIAN)
+            
+            
+            print(meanByPowr)
+            print(modeByPowr)
+            print(medianByPowr)
+
+
+            
+            print(meanByStart)
+            print(modeByStart)
+            print(medianByStart)
+
         return
 
 if __name__ == "__main__":
