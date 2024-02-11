@@ -13,7 +13,7 @@ class Main(tk.Tk):
         super().__init__()
 
         self.title("Data Processing App")
-        self.geometry("700x350")
+        self.geometry("1200x600")
 
         label = ttk.Label(self, text="Follow the steps to process the data", font= ('Arial 14 bold'), padding='20')
         label.pack()
