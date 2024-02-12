@@ -113,10 +113,11 @@ class Generator:
 
         # plot the data
         figure, ax = plt.subplots()
-        sns.heatmap(dfForPlotting.corr(), annot=True, square=True, cbar=True, ax=ax)
-
-        cor = dfForPlotting['Freq'].corr(df['CirafZones'])
-        print(f'The correlation coeficient is: {cor}')
+        cor = dfForPlotting.corr()
+        sns.heatmap(cor, annot=True, square=True, cbar=True, ax=ax)
+        
+        print('The correlation coeficient is:')
+        print(cor)
 
         plt.show()        
         return figure

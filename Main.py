@@ -52,6 +52,8 @@ class Main(tk.Tk):
             ImportWorker.import_hf_schedule(directoryName)
             ImportWorker.import_language(directoryName)
             ImportWorker.import_location(directoryName)
+        
+            print('Step 1 - Import Process finished!')
             Main.button2['state'] = 'normal'
         return 
     
@@ -59,6 +61,7 @@ class Main(tk.Tk):
         answer = askyesno(title='Step 2 Confirmation', message='Are you sure you want to start processing the data?')
         if answer:
             DataHandler.prepare_data()
+            print('Step 2 - Data Processing finished!')
             Main.button3['state'] = 'normal'
         return
         
@@ -109,7 +112,9 @@ class Main(tk.Tk):
             self.f = Generator.generate_correlation(dataFrame)
             self.canvas = FigureCanvasTkAgg(self.f)
             self.canvas.get_tk_widget().pack()
-            self.canvas.draw()            
+            self.canvas.draw()
+
+            print('Step 3 - Stats were generated!')
 
         return
 
