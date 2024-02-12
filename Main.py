@@ -5,12 +5,15 @@ from tkinter.messagebox import askyesno
 from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
 from matplotlib.figure import Figure
 import matplotlib.pyplot as plt
-from Workers.DataImporter import ImportWorker
-from Workers.DataProcessor import DataHandler
-from Workers.StatisticsGenerator import Generator
-from Utils.StatEnum import StatType
+from workers.DataImporter import ImportWorker
+from workers.DataProcessor import DataHandler
+from workers.StatisticsGenerator import Generator
+from utils.StatEnum import StatType
 
 class Main(tk.Tk):
+    button1: Button
+    button2: Button
+    button3: Button
 
     def __init__(self):
         super().__init__()
@@ -23,53 +26,56 @@ class Main(tk.Tk):
 
         labelStep1 = Label(self, text="Step 1 - Import the CSV files in database", font= ('Arial 12'))
         labelStep1.pack()
-        Button(self, text= "Execute Step 1", command=self.stepOne).pack(expand=True)
+        Main.button1 = Button(self, text= "Execute Step 1", command=self.step_one)
+        Main.button1.pack(expand=True)
 
         labelStep2 = Label(self, text="Step 2 - Prepare data and export to JSON", font= ('Arial 12'))
         labelStep2.pack()
-        Button(self, text= "Execute Step 2", command=self.stepTwo).pack(expand=True)
+        Main.button2 = Button(self, text= "Execute Step 2", command=self.step_two, state='disabled')
+        Main.button2.pack(expand=True)
 
         labelStep3 = Label(self, text="Step 3 - Generate Stats and Graphs", font= ('Arial 12'))
         labelStep3.pack()
-        Button(self, text= "Execute Step 3", command=self.stepThree).pack(expand=True)
-        
-        
+        Main.button3 = Button(self, text= "Execute Step 3", command=self.step_three, state='disabled')
+        Main.button3.pack(expand=True)
 
-    def stepOne(self):
+    def step_one(self):
         answer = askyesno(title='Step 1 Confirmation', message='Are you sure you want to import data in database?')
         if answer:
-            ImportWorker.databaseCleanUp()
+            ImportWorker.database_clean_up()
 
             directoryName = askdirectory()
 
-            ImportWorker.importAdmin(directoryName)
-            ImportWorker.importAnt(directoryName)
-            ImportWorker.importBroadcaster(directoryName)
-            ImportWorker.importHfSchedule(directoryName)
-            ImportWorker.importLanguage(directoryName)
-            ImportWorker.importLocation(directoryName)
-
-    def stepTwo(self):
+            ImportWorker.import_admin(directoryName)
+            ImportWorker.import_ant(directoryName)
+            ImportWorker.import_broadcaster(directoryName)
+            ImportWorker.import_hf_schedule(directoryName)
+            ImportWorker.import_language(directoryName)
+            ImportWorker.import_location(directoryName)
+            Main.button2['state'] = 'normal'
+        return 
+    
+    def step_two(self):
         answer = askyesno(title='Step 2 Confirmation', message='Are you sure you want to start processing the data?')
         if answer:
-            DataHandler.PrepareData()
-            return
+            DataHandler.prepare_data()
+            Main.button3['state'] = 'normal'
+        return
         
-    def stepThree(self):
+    def step_three(self):
         answer = askyesno(title='Step 3 Confirmation', message='Are you sure you want to load the JSON and generate the Stats?')
         if answer:
-            dataFrame = Generator.PrepareJsonData()
+            dataFrame = Generator.prepare_json_data()
 
-            filteredDfByPowr = Generator.filterDatabyPowr(dataFrame, 90)
-            meanByPowr =  Generator.calculateStats(filteredDfByPowr, StatType.MEAN)
-            modeByPowr =  Generator.calculateStats(filteredDfByPowr, StatType.MODE)
-            medianByPowr = Generator.calculateStats(filteredDfByPowr, StatType.MEDIAN)
+            filteredDfByPowr = Generator.filter_data_by_powr(dataFrame, 90)
+            meanByPowr =  Generator.calculate_stats(filteredDfByPowr, StatType.MEAN)
+            modeByPowr =  Generator.calculate_stats(filteredDfByPowr, StatType.MODE)
+            medianByPowr = Generator.calculate_stats(filteredDfByPowr, StatType.MEDIAN)
             
-            
-            filteredDfByStart = Generator.filterDatabyStart(dataFrame, 1100)
-            meanByStart =  Generator.calculateStats(filteredDfByStart, StatType.MEAN)
-            modeByStart =  Generator.calculateStats(filteredDfByStart, StatType.MODE)
-            medianByStart = Generator.calculateStats(filteredDfByStart, StatType.MEDIAN)
+            filteredDfByStart = Generator.filter_data_by_start(dataFrame, 1100)
+            meanByStart =  Generator.calculate_stats(filteredDfByStart, StatType.MEAN)
+            modeByStart =  Generator.calculate_stats(filteredDfByStart, StatType.MODE)
+            medianByStart = Generator.calculate_stats(filteredDfByStart, StatType.MEDIAN)
                         
             # Displays Mean, Mode and Median for Power More than 90
             labelPowerMoreThan90 = Label(self, text='Mean, Mode, and Median for CirafZones for "Powr" more than 90', font= ('Arial 10 bold'))
@@ -83,7 +89,7 @@ class Main(tk.Tk):
             labelMedianByPower.pack()
             
             # Displays Mean, Mode and Median for Start Onwards 110
-            labelStartOnwards110 = Label(self, text='Mean, Mode, and Median for CirafZones for "Powr" more than 90', font= ('Arial 10 bold'))
+            labelStartOnwards110 = Label(self, text='Mean, Mode, and Median for CirafZones for "Start" onwards 100 ', font= ('Arial 10 bold'))
             labelStartOnwards110.pack()
             
             labelMeanByStart = Label(self, text=f'Mean: {meanByStart}', font= ('Arial 10'))
@@ -94,19 +100,20 @@ class Main(tk.Tk):
             labelMedianByStart.pack()
 
             # Generate First Graph - Information for All shortwave frequencies
-            self.f = Generator.GenerateGraph(dataFrame)
+            self.f = Generator.generate_graph(dataFrame)
             self.canvas = FigureCanvasTkAgg(self.f)
             self.canvas.get_tk_widget().pack()
             self.canvas.draw()
 
             # Generate Second Graph - Output Correlation between 'Freq' and 'CirafZones'
-            # self.g = Generator.GenerateCorrelation()
-            # self.canvas = FigureCanvasTkAgg(self.g)
-            # self.canvas.get_tk_widget().pack()
-            # self.canvas.draw()            
+            self.f = Generator.generate_correlation(dataFrame)
+            self.canvas = FigureCanvasTkAgg(self.f)
+            self.canvas.get_tk_widget().pack()
+            self.canvas.draw()            
 
         return
 
 if __name__ == "__main__":
+
     app = Main()
     app.mainloop()

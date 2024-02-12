@@ -1,17 +1,17 @@
 import pandas as pd
 import numpy as np
 from scipy import stats
-from Utils.StatEnum import StatType
+from utils.StatEnum import StatType
 import matplotlib
 matplotlib.use('TkAgg')
-from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
-from matplotlib.figure import Figure
+import seaborn as sns
 import matplotlib.pyplot as plt
+from matplotlib.figure import Figure
 
 class Generator:
 
-    def PrepareJsonData():
-        df = pd.read_json(r'OutputFiles\Data.json', orient=True)
+    def prepare_json_data():
+        df = pd.read_json(r'outputfiles\Data.json', orient=True)
 
         # Flatten the Arrays present in DataFrame from JSON file
         broadcasterSeries = df.Broadcaster.apply(Generator.flatten)
@@ -38,8 +38,8 @@ class Generator:
 
         return df
                 
-    def calculateStats(df, classification):
-        cleanedDataFrame = Generator.cleanData(df)
+    def calculate_stats(df, classification):
+        cleanedDataFrame = Generator.clean_data(df)
         match classification:
             case StatType.MEAN:
                 return np.mean(cleanedDataFrame)
@@ -48,13 +48,13 @@ class Generator:
             case StatType.MEDIAN:
                 return np.median(cleanedDataFrame)
 
-    def filterDatabyPowr(df, val):
+    def filter_data_by_powr(df, val):
         return df[(df.Powr > val)]
     
-    def filterDatabyStart(df, val):
+    def filter_data_by_start(df, val):
         return df[(df.Start >= val)]
 
-    def cleanData(df):
+    def clean_data(df):
         cirafZonesDf = (df['CirafZones']).to_frame()
         cirafZonesDf["Result"] = cirafZonesDf["CirafZones"].str.isnumeric().apply(lambda x: "No" if x == False else "Yes")
         dataToErasedf = cirafZonesDf[(cirafZonesDf['Result'] == 'No')].index
@@ -62,72 +62,61 @@ class Generator:
         cirafZonesDf = cirafZonesDf[cirafZonesDf.columns.drop('Result')]
 
         return cirafZonesDf['CirafZones'].astype(float)
+
+    def clean_data_for_plotting(df):
+        df["Result"] = df["CirafZones"].str.isnumeric().apply(lambda x: "No" if x == False else "Yes")
+        dataToErasedf = df[(df['Result'] == 'No')].index
+        df.drop(dataToErasedf, inplace=True)
+        df = df[df.columns.drop('Result')]
+        df['CirafZones'] = df['CirafZones'].astype(float)
+        
+        return df
     
     def flatten(js):
         return pd.DataFrame(js).squeeze()
     
-    def GenerateGraph(df):
-        # x = [1,2,3,4]
-        # y = [20,21,20.5, 20.8]
-        # fig = Figure()
-        # axes = fig.add_subplot(111)
-        # axes.plot(x,y)
-
+    def generate_graph(df):
         # Clean the data to have 
-        cleanedDataFrame = Generator.cleanData(df)
-        print(df)
+        cleanedDataFrame = Generator.clean_data_for_plotting(df)
         
-        # set up the figure and axes
-        fig = plt.figure(figsize=(8, 3))
-        ax1 = fig.add_subplot(121, projection='3d')
-        ax2 = fig.add_subplot(122, projection='3d')
+        dfForPlotting = cleanedDataFrame.groupby(['Freq', 'BroadcasterCode', 'LanguageCode', 'CirafZones'])['Days'].sum().reset_index().rename(columns={'Days':'SummedDays'})
+        dfForPlotting['Grouped'] = dfForPlotting['Freq'].astype(str)  + ' ' + dfForPlotting['BroadcasterCode'] + ' ' + dfForPlotting['LanguageCode'] + ' ' + dfForPlotting['CirafZones'].astype(str)
+        dfForPlotting = dfForPlotting[dfForPlotting.columns.drop(['Freq', 'BroadcasterCode', 'LanguageCode', 'CirafZones'])]
 
-        # fake data
-        _x = np.arange(4)
-        _y = np.arange(5)
-        _xx, _yy = np.meshgrid(_x, _y)
-        x, y = _xx.ravel(), _yy.ravel()
+        np.random.seed(19680801)
 
-        top = x + y
-        bottom = np.zeros_like(top)
-        width = depth = 1
+        fig, ax = plt.subplots()
+        groupedFreqAndCiraf = tuple(dfForPlotting.Grouped)
 
-        ax1.bar3d(x, y, bottom, width, depth, top, shade=True)
-        ax1.set_title('Shaded')
+        y_pos = np.arange(len(groupedFreqAndCiraf))
+        summedDays = dfForPlotting['SummedDays'].values
+        
+        error = np.random.rand(len(groupedFreqAndCiraf))
 
-        ax2.bar3d(x, y, bottom, width, depth, top, shade=False)
-        ax2.set_title('Not Shaded')
+        ax.barh(y_pos, summedDays, xerr=error, align='center')
+        ax.set_yticks(y_pos, labels=groupedFreqAndCiraf)
+        ax.invert_yaxis() 
+
+        ax.set_xlabel('Summed Days')
+        ax.set_title('Days for instances of shortwave frequencies grouped by: Freq, BroadcasterCode, LanguageCode & CirafZones')
 
         plt.show()
         return fig
         
-    def GenerateCorrelation():
-        # x = [1,2,3,4]
-        # y = [20,21,20.5, 20.8]
-        # fig = Figure()
-        # axes = fig.add_subplot(111)
-        # axes.plot(x,y)
+    def generate_correlation(df):
+        # Clean the data to have 
+        cleanedDataFrame = Generator.clean_data_for_plotting(df)
 
-        # set up the figure and axes
-        fig = plt.figure(figsize=(8, 3))
-        ax1 = fig.add_subplot(121, projection='3d')
-        ax2 = fig.add_subplot(122, projection='3d')
+        dfForPlotting = cleanedDataFrame.filter(['Freq','CirafZones'], axis=1)
 
-        # fake data
-        _x = np.arange(4)
-        _y = np.arange(5)
-        _xx, _yy = np.meshgrid(_x, _y)
-        x, y = _xx.ravel(), _yy.ravel()
+        print(dfForPlotting)
 
-        top = x + y
-        bottom = np.zeros_like(top)
-        width = depth = 1
+        # plot the data
+        figure, ax = plt.subplots()
+        sns.heatmap(dfForPlotting.corr(), annot=True, square=True, cbar=True, ax=ax)
 
-        ax1.bar3d(x, y, bottom, width, depth, top, shade=True)
-        ax1.set_title('Shaded')
+        cor = dfForPlotting['Freq'].corr(df['CirafZones'])
+        print(f'The correlation coeficient is: {cor}')
 
-        ax2.bar3d(x, y, bottom, width, depth, top, shade=False)
-        ax2.set_title('Not Shaded')
-
-        plt.show()
-        return fig
+        plt.show()        
+        return figure

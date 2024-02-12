@@ -2,18 +2,17 @@ import pyodbc
 import pandas as pd
 import gc
 import warnings
-from Utils.ServerCredentials import Credentials
+from utils.ServerCredentials import Credentials
 
 class DataHandler:
 
-    def PrepareData():
+    def prepare_data():
         # Clear warnings, we can not implement SQL Alchemy because it's not part of the content taught in the course
         warnings.filterwarnings('ignore')
 
-        conn = pyodbc.connect(f'DRIVER=SQL Server;SERVER={Credentials.server};DATABASE={Credentials.database};UID={Credentials.user};PWD={Credentials.password}')
-        conn.setdecoding(pyodbc.SQL_CHAR, encoding=Credentials.encoding)
-        conn.setencoding(Credentials.encoding)
-
+        conn = pyodbc.connect(f'DRIVER=SQL Server;SERVER={Credentials._server};DATABASE={Credentials._database};UID={Credentials._user};PWD={Credentials._password}')
+        conn.setdecoding(pyodbc.SQL_CHAR, encoding=Credentials._encoding)
+        conn.setencoding(Credentials._encoding)
 
         # Removes 'BROADCASTER' code: ADM, DWL or KBS
         broadcasterQuery = "SELECT * FROM [dbo].[TBL_BROADCASTER];"
@@ -150,6 +149,6 @@ class DataHandler:
         finaldataFrame = finaldataFrame[finaldataFrame.columns.drop('Long')]
         finaldataFrame = pd.merge(finaldataFrame, dtGroupedLocations, on=jsonheader)
 
-        finaldataFrame.to_json(r'OutputFiles\Data.json', orient='records')
+        finaldataFrame.to_json(r'outputfiles\Data.json', orient='records')
 
         return

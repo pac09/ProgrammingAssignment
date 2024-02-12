@@ -1,7 +1,6 @@
 class Credentials:
-    
-    server = 'localhost,1433'
-    database = 'RadioBroadcasts'
-    user = 'sa'
-    password = 'DevMode2024'
-    encoding = 'latin1'
+    _server = 'localhost,1433'
+    _database = 'RadioBroadcasts'
+    _user = 'sa'
+    _password = 'DevMode2024'
+    _encoding = 'latin1'
