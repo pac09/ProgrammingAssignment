@@ -2,9 +2,9 @@ import tkinter as tk
 from tkinter import *
 from tkinter.filedialog import askdirectory
 from tkinter.messagebox import askyesno
+from tkinter.messagebox import showerror
+from tkinter.simpledialog import askfloat
 from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
-from matplotlib.figure import Figure
-import matplotlib.pyplot as plt
 from workers.DataImporter import ImportWorker
 from workers.DataProcessor import DataHandler
 from workers.StatisticsGenerator import Generator
@@ -55,6 +55,8 @@ class Main(tk.Tk):
         
             print('Step 1 - Import Process finished!')
             Main.button2['state'] = 'normal'
+        else:
+            showerror(title='Error', message='User declined execution')
         return 
     
     def step_two(self):
@@ -63,25 +65,31 @@ class Main(tk.Tk):
             DataHandler.prepare_data()
             print('Step 2 - Data Processing finished!')
             Main.button3['state'] = 'normal'
+        else:
+            showerror(title='Error', message='User declined execution')
         return
         
     def step_three(self):
         answer = askyesno(title='Step 3 Confirmation', message='Are you sure you want to load the JSON and generate the Stats?')
-        if answer:
+
+        powrFilter = askfloat('Value to filter by Powr', 'Please provide a numeric value to calculate Mean, Mode, and Median (suggested value: 90)')
+        startFilter = askfloat('Value to filter by Start', 'Please provide a numeric value to calculate Mean, Mode, and Median (suggested value: 1100)')
+
+        if answer and (powrFilter is not None) and (startFilter is not None):
             dataFrame = Generator.prepare_json_data()
 
-            filteredDfByPowr = Generator.filter_data_by_powr(dataFrame, 90)
+            filteredDfByPowr = Generator.filter_data_by_powr(dataFrame, powrFilter)
             meanByPowr =  Generator.calculate_stats(filteredDfByPowr, StatType.MEAN)
             modeByPowr =  Generator.calculate_stats(filteredDfByPowr, StatType.MODE)
             medianByPowr = Generator.calculate_stats(filteredDfByPowr, StatType.MEDIAN)
             
-            filteredDfByStart = Generator.filter_data_by_start(dataFrame, 1100)
+            filteredDfByStart = Generator.filter_data_by_start(dataFrame, startFilter)
             meanByStart =  Generator.calculate_stats(filteredDfByStart, StatType.MEAN)
             modeByStart =  Generator.calculate_stats(filteredDfByStart, StatType.MODE)
             medianByStart = Generator.calculate_stats(filteredDfByStart, StatType.MEDIAN)
                         
             # Displays Mean, Mode and Median for Power More than 90
-            labelPowerMoreThan90 = Label(self, text='Mean, Mode, and Median for CirafZones for "Powr" more than 90', font= ('Arial 10 bold'))
+            labelPowerMoreThan90 = Label(self, text=f'Mean, Mode, and Median for CirafZones for "Powr" more than {str(powrFilter)}', font= ('Arial 10 bold'))
             labelPowerMoreThan90.pack()
             
             labelMeanByPower = Label(self, text=f'Mean: {meanByPowr}', font= ('Arial 10'))
@@ -91,8 +99,8 @@ class Main(tk.Tk):
             labelMedianByPower = Label(self, text=f'Median: {medianByPowr}', font= ('Arial 10'))
             labelMedianByPower.pack()
             
-            # Displays Mean, Mode and Median for Start Onwards 110
-            labelStartOnwards110 = Label(self, text='Mean, Mode, and Median for CirafZones for "Start" onwards 100 ', font= ('Arial 10 bold'))
+            # Displays Mean, Mode and Median for Start Onwards 1110
+            labelStartOnwards110 = Label(self, text=f'Mean, Mode, and Median for CirafZones for "Start" onwards {str(startFilter)}', font= ('Arial 10 bold'))
             labelStartOnwards110.pack()
             
             labelMeanByStart = Label(self, text=f'Mean: {meanByStart}', font= ('Arial 10'))
@@ -115,6 +123,8 @@ class Main(tk.Tk):
             self.canvas.draw()
 
             print('Step 3 - Stats were generated!')
+        else:
+            showerror(title='Error', message='User declined execution')
 
         return
 
